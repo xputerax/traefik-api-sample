@@ -1,0 +1,38 @@
+services:
+  auth:
+    image: apigwsample/auth
+    networks:
+    - traefik
+    labels:
+    - traefik.enable=true
+    - traefik.http.services.apigwsample_auth.loadbalancer.server.port=8080
+    - traefik.http.routers.apigwsample_auth.rule=PathPrefix(`/api/auth`)
+  product:
+    image: apigwsample/product
+    networks:
+    - traefik
+    labels:
+    - traefik.enable=true
+    - traefik.http.services.apigwsample_product.loadbalancer.server.port=8080
+    - traefik.http.routers.apigwsample_product.rule=PathPrefix(`/api/product`)
+  traefik:
+    image: traefik
+    command:
+    - --api.dashboard=true
+    - --api.insecure=true
+    - "--entrypoints.web.address=:80"
+    - "--entrypoints.websecure.address=:443"
+    - --providers.docker
+    - --providers.docker.exposedByDefault=false
+    - --providers.docker.network=traefik
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+    - traefik
+    ports:
+    - 80:80
+    - 443:443
+    - 81:8080 # wtf why 8080
+
+networks:
+  traefik:
